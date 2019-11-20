@@ -52,6 +52,10 @@ module.exports = (_env, argv) => {
           ],
         },
         {
+          test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+          loader: "url-loader?limit=100000",
+        },
+        {
           test: /\.css$/,
           use: [
             mode !== "production" ? { loader: "style-loader", options: { hmr: true } } : MiniCssExtractPlugin.loader,

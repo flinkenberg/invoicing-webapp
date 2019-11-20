@@ -1,9 +1,17 @@
 .appWrap {
-  display: grid;
-  align-items: center;
   width: 100vw;
   height: 100vh;
-  background: rgb(40, 40, 50);
-  color: rgb(150, 150, 200);
-  text-align: center;
+  // background: rgb(40, 40, 50);
+  // color: rgb(150, 150, 200);
+}
+.appSidebarContentWrap {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-columns: max-content auto;
+  column-gap: 1rem;
+}
+.appContentWrap {
+  display: grid;
+  grid-auto-flow: row;
+  row-gap: 2rem;
 }
