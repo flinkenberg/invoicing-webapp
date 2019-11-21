@@ -1,0 +1,39 @@
+overwrite: true
+schema: "http://localhost:4000"
+documents: "src/**/*.graphql"
+generates:
+  src/graphql_definitions.ts:
+    plugins:
+      - add: "// THIS IS A GENERATED FILE\n// `npm run generate` to refresh it\n/* eslint-disable */\n\n"
+      - "typescript"
+    config:
+      avoidOptionals: false
+  src/:
+    preset: near-operation-file
+    presetConfig:
+      extension: .generated.ts
+      baseTypesPath: graphql_definitions.ts
+    plugins:
+      - add: "// THIS IS A GENERATED FILE\n// `npm run generate` to refresh it\n/* eslint-disable */\n\n"
+      - "typescript-operations"
+      - "typescript-react-apollo"
+    config:
+      withHOC: false
+      withComponent: false
+      withHooks: true
+      withMutationFn: false
+      reactApolloVersion: 3
+      documentMode: external
+      importDocumentNodeExternallyFrom: near-operation-file
+  src/graphql/introspection-fragment.generated.ts:
+    plugins:
+      - add: "// THIS IS A GENERATED FILE\n// `npm run generate` to refresh it\n/* eslint-disable */\n\n"
+      - fragment-matcher
+  src/graphqldeclarations.d.ts:
+    plugins:
+      - add: "// THIS IS A GENERATED FILE\n// `npm run generate` to refresh it\n/* eslint-disable */\n\n"
+      - "typescript-graphql-files-modules"
+  ./schemaGlobal.graphql:
+    plugins:
+      - add: "# THIS IS A GENERATED FILE\n# `npm run generate` to refresh it\n\n"
+      - schema-ast

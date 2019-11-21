@@ -3,7 +3,7 @@ import styles from "../../App.scss";
 import { Menu, Input, Dropdown, Table, Label, Icon, Message, Grid, Statistic } from "semantic-ui-react";
 import { InvoiceStatus, Invoice } from "../types/main";
 import { NavLink } from "react-router-dom";
-import useSort from "../../hooks/useSort";
+import useSort from "../../Common/hooks/useSort";
 import useGetInvoices from "../hooks/useGetInvoices";
 
 export default function List() {

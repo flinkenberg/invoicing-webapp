@@ -1,0 +1,29 @@
+# THIS IS A GENERATED FILE
+# `npm run generate` to refresh it
+
+
+
+type CustomerMin {
+  id: ID!
+  name: String!
+}
+
+type Invoice {
+  id: ID!
+  customer: CustomerMin!
+  total: Int!
+  createdAt: Int!
+  status: InvoiceStatus!
+}
+
+enum InvoiceStatus {
+  DUE
+  PAST_DUE
+  PAID
+  UNPAID
+}
+
+type Query {
+  getInvoices: [Invoice]!
+  _: Boolean
+}
