@@ -2,25 +2,26 @@ import React, { lazy, Suspense } from "react";
 import "semantic-ui-css/semantic.min.css";
 import styles from "./App.scss";
 import { Menu, Container, Image, Dropdown, Dimmer, Loader } from "semantic-ui-react";
-import { Link, HashRouter as Router, Route, Switch, Redirect } from "react-router-dom";
+import { HashRouter as Router, Route, Switch, Redirect, NavLink, Link } from "react-router-dom";
 
 const InvoicesList = lazy(() => import("./Invoices/components/List"));
+const InvoicesCreate = lazy(() => import("./Invoices/components/Create"));
 const ContactsList = lazy(() => import("./Contacts/components/List"));
 
 export default function App() {
   return (
     <Router>
       <div className={styles.appWrap}>
-        <Menu inverted>
+        <Menu fixed="top" inverted style={{ height: "3rem" }}>
           <Container>
             <Menu.Item as={Link} to="/" header>
               <Image size="mini" src="#" style={{ marginRight: "1.5rem" }} />
-              Invoicing
+              Invoice Manager
             </Menu.Item>
-            <Menu.Item as={Link} to="/invoices">
+            <Menu.Item as={NavLink} to="/invoices">
               Invoices
             </Menu.Item>
-            <Menu.Item as={Link} to="/contacts">
+            <Menu.Item as={NavLink} to="/contacts">
               Contacts
             </Menu.Item>
             <Menu.Menu position="right">
@@ -34,21 +35,24 @@ export default function App() {
             </Menu.Menu>
           </Container>
         </Menu>
-        <Container>
-          <Suspense
-            fallback={
-              <Dimmer active inverted>
-                <Loader inverted>Loading</Loader>
-              </Dimmer>
-            }
-          >
-            <Switch>
-              <Route path="/invoices" component={InvoicesList} />
-              <Route path="/contacts" component={ContactsList} />
-              <Redirect to="/invoices" />
-            </Switch>
-          </Suspense>
-        </Container>
+        <div className={styles.mainContentWrap}>
+          <Container>
+            <Suspense
+              fallback={
+                <Dimmer active inverted>
+                  <Loader inverted>Loading</Loader>
+                </Dimmer>
+              }
+            >
+              <Switch>
+                <Route path="/invoices/list" component={InvoicesList} />
+                <Route path="/invoices/create" component={InvoicesCreate} />
+                <Route path="/contacts" component={ContactsList} />
+                <Redirect to="/invoices/list" />
+              </Switch>
+            </Suspense>
+          </Container>
+        </div>
       </div>
     </Router>
   );

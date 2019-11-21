@@ -3,6 +3,10 @@ html {
   font-size: 16px;
   font-family: "Helvetica Neue", Helvetica, Arial sans-serif;
 }
+button {
+  border: transparent;
+  cursor: pointer;
+}
 *,
 *:before,
 *:after {

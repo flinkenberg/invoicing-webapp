@@ -4,14 +4,20 @@
   // background: rgb(40, 40, 50);
   // color: rgb(150, 150, 200);
 }
-.appSidebarContentWrap {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-columns: max-content auto;
-  column-gap: 1rem;
+.mainContentWrap {
+  display: block;
+  padding-top: 4rem;
+  height: 100vh;
+  overflow-y: auto;
 }
-.appContentWrap {
-  display: grid;
-  grid-auto-flow: row;
-  row-gap: 2rem;
+.headerCell {
+  cursor: pointer !important;
+  user-select: none;
+  &:hover {
+    color: rgb(100, 100, 250) !important;
+  }
+}
+.headerCellActive {
+  color: rgb(100, 100, 250) !important;
+  composes: headerCell;
 }
