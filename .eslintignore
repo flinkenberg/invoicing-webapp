@@ -1,0 +1,3 @@
+src/**/*.generated.ts
+src/graphql_definitions.ts
+src/graphqldeclarations.d.ts

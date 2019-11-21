@@ -17,7 +17,7 @@ export type GetInvoicesQuery = (
   { __typename?: 'Query' }
   & { getInvoices: Array<Types.Maybe<(
     { __typename?: 'Invoice' }
-    & Pick<Types.Invoice, 'id'>
+    & Pick<Types.Invoice, 'id' | 'total' | 'createdAt' | 'status'>
   )>> }
 );
 

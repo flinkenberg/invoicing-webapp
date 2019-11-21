@@ -1,5 +1,8 @@
 query getInvoices {
   getInvoices {
     id
+    total
+    createdAt
+    status
   }
 }

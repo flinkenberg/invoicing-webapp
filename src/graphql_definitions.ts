@@ -16,7 +16,6 @@ export type Scalars = {
 
 export type CustomerMin = {
    __typename?: 'CustomerMin',
-  id: Scalars['ID'],
   name: Scalars['String'],
 };
 
@@ -25,7 +24,7 @@ export type Invoice = {
   id: Scalars['ID'],
   customer: CustomerMin,
   total: Scalars['Int'],
-  createdAt: Scalars['Int'],
+  createdAt: Scalars['String'],
   status: InvoiceStatus,
 };
 

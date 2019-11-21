@@ -30,6 +30,13 @@ module.exports = (_env, argv) => {
     module: {
       rules: [
         {
+          test: /\.(graphql|gql)$/,
+          exclude: /node_modules/,
+          use: {
+            loader: "graphql-tag/loader",
+          },
+        },
+        {
           test: /\.(js)$/,
           exclude: mode !== "production" ? undefined : /node_modules/,
           use: {

@@ -3,7 +3,7 @@ import { ApolloClient } from "apollo-client";
 import { ApolloLink, Operation } from "apollo-link";
 import { WebSocketLink } from "apollo-link-ws";
 
-const WS = "wss://localhost:4000/";
+const WS = "ws://localhost:4000/";
 
 let client: ApolloClient<NormalizedCacheObject> | null = null;
 

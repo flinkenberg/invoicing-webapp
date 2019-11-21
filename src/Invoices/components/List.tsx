@@ -1,20 +1,22 @@
 import React, { useState, ChangeEvent, createRef, RefObject, MouseEvent } from "react";
 import styles from "../../App.scss";
 import { Menu, Input, Dropdown, Table, Label, Icon, Message, Grid, Statistic } from "semantic-ui-react";
-import { InvoiceStatus, Invoice } from "../types/main";
 import { NavLink } from "react-router-dom";
 import useSort from "../../Common/hooks/useSort";
-import useGetInvoices from "../hooks/useGetInvoices";
+import { useGetInvoicesQuery } from "../graphql/invoices.generated";
+import { InvoiceColumn } from "../types/main";
+import { InvoiceStatus } from "../../graphql_definitions";
 
 export default function List() {
-  const { currentSortMethod, sort } = useSort<keyof Invoice>((column, desc) => {
+  const { currentSortMethod, sort } = useSort<InvoiceColumn>((column, desc) => {
     // `Should call graphl to sort invoices by ${column}, method ${desc ? "DESC" : "ASC"}`
     return null;
   });
   const [input, setInput] = useState<string>("");
-  const [ddOption, setDdOption] = useState<keyof Invoice>("customer");
+  const [ddOption, setDdOption] = useState<InvoiceColumn>("customer");
   // Should be a graphl hook
-  const { limit, invoices, total, changePage, currentPage, previousPage, nextPage } = useGetInvoices();
+  const { data } = useGetInvoicesQuery();
+  const invoices = data && data.getInvoices ? data.getInvoices : [];
   const searchInputRef: RefObject<Input> = createRef();
   function handleDropdownChange(_, data): void {
     sort(null);
@@ -49,22 +51,22 @@ export default function List() {
   function handleChangePage(e: MouseEvent<HTMLAnchorElement>): void {
     switch (e.currentTarget.title) {
       case "Page 1":
-        changePage(1);
+        // changePage(1);
         break;
       case "Page 2":
-        changePage(2);
+        // changePage(2);
         break;
       case "Page 3":
-        changePage(3);
+        // changePage(3);
         break;
       case "Page 4":
-        changePage(4);
+        // changePage(4);
         break;
       case "Previous page":
-        previousPage();
+        // previousPage();
         break;
       case "Next page":
-        nextPage();
+        // nextPage();
         break;
       default:
         break;
@@ -73,9 +75,9 @@ export default function List() {
   function handleSortById(): void {
     sort("id");
   }
-  function handleSortByCustomer(): void {
-    sort("customer");
-  }
+  // function handleSortByCustomer(): void {
+  //   sort("customer");
+  // }
   function handleSortByTotal(): void {
     sort("total");
   }
@@ -88,10 +90,10 @@ export default function List() {
   function renderInvoiceStatusTag(status: InvoiceStatus): JSX.Element {
     let color;
     switch (status) {
-      case InvoiceStatus.PAST_DUE:
+      case InvoiceStatus.PastDue:
         color = "orange";
         break;
-      case InvoiceStatus.PAID:
+      case InvoiceStatus.Paid:
         color = "green";
         break;
       default:
@@ -105,10 +107,10 @@ export default function List() {
         onClick={handleStatusLabelClick}
         size="tiny"
         circular
-        color={status === InvoiceStatus.UNPAID ? "red" : null}
-        basic={status !== InvoiceStatus.UNPAID}
+        color={status === InvoiceStatus.Unpaid ? "red" : null}
+        basic={status !== InvoiceStatus.Unpaid}
       >
-        <Icon name="circle" color={status !== InvoiceStatus.UNPAID ? color : null} />
+        <Icon name="circle" color={status !== InvoiceStatus.Unpaid ? color : null} />
         {status}
       </Label>
     );
@@ -165,7 +167,7 @@ export default function List() {
                 value={ddOption}
                 options={[
                   { key: "id", text: "ID", value: "id", icon: "hashtag" },
-                  { key: "customer", text: "Customer", value: "customer", icon: "user" },
+                  // { key: "customer", text: "Customer", value: "customer", icon: "user" },
                   { key: "total", text: "Total", value: "total", icon: "dollar sign" },
                   { key: "createdAt", text: "Created At", value: "createdAt", icon: "clock outline" },
                   // { key: "tags", text: "Tag", value: "tags", icon: "tag" },
@@ -197,7 +199,7 @@ export default function List() {
                     ) : null}
                     ID
                   </Table.HeaderCell>
-                  <Table.HeaderCell
+                  {/* <Table.HeaderCell
                     singleLine
                     className={
                       currentSortMethod && currentSortMethod.column === "customer"
@@ -214,7 +216,7 @@ export default function List() {
                       )
                     ) : null}
                     Customer
-                  </Table.HeaderCell>
+                  </Table.HeaderCell> */}
                   <Table.HeaderCell
                     singleLine
                     className={
@@ -275,7 +277,7 @@ export default function List() {
                 {invoices.map(inv => (
                   <Table.Row key={inv.id}>
                     <Table.Cell textAlign="center">{inv.id}</Table.Cell>
-                    <Table.Cell singleLine>{inv.customer.name}</Table.Cell>
+                    {/* <Table.Cell singleLine>{inv.customer.name}</Table.Cell> */}
                     <Table.Cell singleLine textAlign="right">
                       <Statistic size="mini">
                         <Statistic.Value>
@@ -301,8 +303,8 @@ export default function List() {
                       ))}
                     </Table.Cell> */}
                     <Table.Cell singleLine>
-                      {`${new Date(inv.createdAt).toLocaleDateString()} - ${new Date(
-                        inv.createdAt,
+                      {`${new Date(parseInt(inv.createdAt)).toLocaleDateString()} - ${new Date(
+                        parseInt(inv.createdAt),
                       ).toLocaleTimeString()}`}
                     </Table.Cell>
                     <Table.Cell singleLine>{renderInvoiceStatusTag(inv.status)}</Table.Cell>
@@ -316,7 +318,7 @@ export default function List() {
                       <Menu.Item as="button" title="Previous page" onClick={handleChangePage} icon>
                         <Icon name="chevron left" />
                       </Menu.Item>
-                      {Array(total / limit)
+                      {/* {Array(total / limit)
                         .fill(null)
                         .map((_, i) => (
                           <Menu.Item
@@ -328,7 +330,7 @@ export default function List() {
                           >
                             {i + 1}
                           </Menu.Item>
-                        ))}
+                        ))} */}
                       <Menu.Item as="button" title="Next page" onClick={handleChangePage} icon>
                         <Icon name="chevron right" />
                       </Menu.Item>
