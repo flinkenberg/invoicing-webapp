@@ -1,28 +1,51 @@
-import React, { useState, ChangeEvent, createRef, RefObject, MouseEvent } from "react";
+import React, { useState, ChangeEvent, createRef, RefObject, MouseEvent, useMemo, useEffect } from "react";
 import styles from "../../App.scss";
 import { Menu, Input, Dropdown, Table, Label, Icon, Message, Grid, Statistic } from "semantic-ui-react";
 import { NavLink } from "react-router-dom";
 import useSort from "../../Common/hooks/useSort";
 import { useGetInvoicesQuery } from "../graphql/invoices.generated";
-import { InvoiceColumn } from "../types/main";
-import { InvoiceStatus } from "../../graphql_definitions";
+import { InvoiceStatus, InvoiceDbKey } from "../../graphql_definitions";
 
 export default function List() {
-  const { currentSortMethod, sort } = useSort<InvoiceColumn>((column, desc) => {
-    // `Should call graphl to sort invoices by ${column}, method ${desc ? "DESC" : "ASC"}`
-    return null;
-  });
+  const defaultSortMethod = useMemo(() => InvoiceDbKey.Customer, []);
+  const { currentSortMethod, sort } = useSort<InvoiceDbKey>(defaultSortMethod);
   const [input, setInput] = useState<string>("");
-  const [ddOption, setDdOption] = useState<InvoiceColumn>("customer");
-  // Should be a graphl hook
-  const { data } = useGetInvoicesQuery();
-  const invoices = data && data.getInvoices ? data.getInvoices : [];
+  const [ddOption, setDdOption] = useState<InvoiceDbKey>(defaultSortMethod);
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const { data, loading } = useGetInvoicesQuery({
+    variables: {
+      limit,
+      offset: page * limit - limit,
+      search: input,
+      searchKey: ddOption,
+      sortKey: currentSortMethod.column,
+      isDesc: currentSortMethod.isDesc,
+    },
+  });
+  useEffect(() => {
+    handleDropdownClose();
+  }, []);
+  const invoices = useMemo(() => (data && data.getInvoices ? data.getInvoices.items : []), [data]);
+  const total = useMemo(() => (data && data.getInvoices ? data.getInvoices.total : 0), [data]);
+  const pages = useMemo(
+    () =>
+      total < limit
+        ? 1
+        : total < invoices.length
+        ? Math.floor(invoices.length / limit) + 1
+        : Math.floor(total / limit) + 1,
+    [total, limit, invoices],
+  );
   const searchInputRef: RefObject<Input> = createRef();
   function handleDropdownChange(_, data): void {
-    sort(null);
+    // sort(defaultSortMethod);
+    setPage(1);
     setDdOption(data.value);
-    // do graphl search for data.value which should be a column name
-    // handleFilter(input, data.value);
+  }
+  function handleLimitChange(_, data): void {
+    setPage(1);
+    setLimit(data.value);
   }
   function handleDropdownClose(): void {
     if (searchInputRef.current) {
@@ -32,15 +55,14 @@ export default function List() {
   }
   function handleOnInputChange(e: ChangeEvent<HTMLInputElement>): void {
     setInput(e.currentTarget.value);
-    // handleFilter(e.currentTarget.value, ddOption);
   }
-  function handleStatusLabelClick(e: MouseEvent<HTMLButtonElement>): void {
-    sort(null);
-    setDdOption("status");
-    setInput(e.currentTarget.name);
-    searchInputRef.current.focus();
-    // handleFilter(e.currentTarget.name, "tags");
-  }
+  // function handleStatusLabelClick(e: MouseEvent<HTMLButtonElement>): void {
+  //   sort(defaultSortMethod);
+  //   setPage(1);
+  //   setDdOption(InvoiceDbKey.Status);
+  //   setInput(e.currentTarget.name);
+  //   searchInputRef.current.focus();
+  // }
   // function handleTagClick(e: MouseEvent<HTMLButtonElement>): void {
   //   sort(null);
   //   setDdOption("tags");
@@ -48,44 +70,37 @@ export default function List() {
   //   searchInputRef.current.focus();
   //   // handleFilter(e.currentTarget.name, "tags");
   // }
+  function previousPage(): void {
+    if (page > 1) setPage(page - 1);
+  }
+  function nextPage(): void {
+    if (total > page * limit) setPage(page + 1);
+  }
   function handleChangePage(e: MouseEvent<HTMLAnchorElement>): void {
-    switch (e.currentTarget.title) {
-      case "Page 1":
-        // changePage(1);
-        break;
-      case "Page 2":
-        // changePage(2);
-        break;
-      case "Page 3":
-        // changePage(3);
-        break;
-      case "Page 4":
-        // changePage(4);
-        break;
-      case "Previous page":
-        // previousPage();
-        break;
-      case "Next page":
-        // nextPage();
-        break;
-      default:
-        break;
-    }
+    if (e.currentTarget.title === "Previous page") previousPage();
+    if (e.currentTarget.title === "Next page") nextPage();
+    const page = parseInt(e.currentTarget.title);
+    if (total > (page - 1) * limit) setPage(page);
   }
   function handleSortById(): void {
-    sort("id");
+    sort(InvoiceDbKey.Id);
+    setPage(1);
   }
-  // function handleSortByCustomer(): void {
-  //   sort("customer");
-  // }
+  function handleSortByCustomer(): void {
+    sort(InvoiceDbKey.Customer);
+    setPage(1);
+  }
   function handleSortByTotal(): void {
-    sort("total");
+    sort(InvoiceDbKey.Total);
+    setPage(1);
   }
   function handleSortByCreatedAt(): void {
-    sort("createdAt");
+    sort(InvoiceDbKey.CreatedAt);
+    setPage(1);
   }
   function handleSortByStatus(): void {
-    sort("status");
+    sort(InvoiceDbKey.Status);
+    setPage(1);
   }
   function renderInvoiceStatusTag(status: InvoiceStatus): JSX.Element {
     let color;
@@ -104,7 +119,7 @@ export default function List() {
         as="button"
         style={{ cursor: "pointer" }}
         name={status}
-        onClick={handleStatusLabelClick}
+        // onClick={handleStatusLabelClick}
         size="tiny"
         circular
         color={status === InvoiceStatus.Unpaid ? "red" : null}
@@ -115,29 +130,6 @@ export default function List() {
       </Label>
     );
   }
-  // function handleFilter(val: string, ddOption: keyof Invoice): void {
-  //   // Should be on the backend
-  //   if (!val.length) {
-  //     setInvoices(data);
-  //   } else {
-  //     if (ddOption === "tags") {
-  //       setInvoices(
-  //         data.reduce((acc, inv) => {
-  //           inv.tags.forEach(tag => {
-  //             if (tag.name.toLowerCase().includes(val.toLowerCase())) {
-  //               acc.push(inv);
-  //             }
-  //           });
-  //           return acc;
-  //         }, []),
-  //       );
-  //     } else if (ddOption === "customer") {
-  //       setInvoices(data.filter(inv => inv.customer.name.toLowerCase().includes(val.toLowerCase())));
-  //     } else if (ddOption === "status") {
-  //       setInvoices(data.filter(inv => inv.status.toLowerCase().includes(val.toLowerCase())));
-  //     }
-  //   }
-  // }
   return (
     <Grid stretched>
       <Grid.Column width={3}>
@@ -159,24 +151,51 @@ export default function List() {
             iconPosition="left"
             placeholder="Search..."
             action={
-              <Dropdown
-                button
-                floating
-                onClose={handleDropdownClose}
-                onChange={handleDropdownChange}
-                value={ddOption}
-                options={[
-                  { key: "id", text: "ID", value: "id", icon: "hashtag" },
-                  // { key: "customer", text: "Customer", value: "customer", icon: "user" },
-                  { key: "total", text: "Total", value: "total", icon: "dollar sign" },
-                  { key: "createdAt", text: "Created At", value: "createdAt", icon: "clock outline" },
-                  // { key: "tags", text: "Tag", value: "tags", icon: "tag" },
-                  { key: "status", text: "Status", value: "status", icon: "lightning" },
-                ]}
-              />
+              <>
+                <Dropdown
+                  basic
+                  button
+                  floating
+                  onClose={handleDropdownClose}
+                  onChange={handleDropdownChange}
+                  value={ddOption}
+                  options={[
+                    { key: InvoiceDbKey.Id, text: "ID", value: InvoiceDbKey.Id, icon: "hashtag" },
+                    { key: InvoiceDbKey.Customer, text: "Customer", value: InvoiceDbKey.Customer, icon: "user" },
+                    { key: InvoiceDbKey.Total, text: "Total", value: InvoiceDbKey.Total, icon: "dollar sign" },
+                    {
+                      key: InvoiceDbKey.CreatedAt,
+                      text: "Created At",
+                      value: InvoiceDbKey.CreatedAt,
+                      icon: "clock outline",
+                    },
+                    // { key: "tags", text: "Tag", value: "tags", icon: "tag" },
+                    { key: InvoiceDbKey.Status, text: "Status", value: InvoiceDbKey.Status, icon: "lightning" },
+                  ]}
+                />
+                <Dropdown
+                  basic
+                  button
+                  floating
+                  onChange={handleLimitChange}
+                  value={limit}
+                  options={[
+                    { key: "5", text: "5 per page", value: 5 },
+                    { key: "10", text: "10 per page", value: 10 },
+                    { key: "25", text: "25 per page", value: 25 },
+                  ]}
+                />
+              </>
             }
           />
-          {invoices.length ? (
+          {loading ? (
+            <Message icon>
+              <Icon name="circle notched" loading />
+              <Message.Content>
+                <Message.Header>Loading</Message.Header>
+              </Message.Content>
+            </Message>
+          ) : invoices.length ? (
             <Table basic="very" compact celled>
               <Table.Header>
                 <Table.Row>
@@ -199,7 +218,7 @@ export default function List() {
                     ) : null}
                     ID
                   </Table.HeaderCell>
-                  {/* <Table.HeaderCell
+                  <Table.HeaderCell
                     singleLine
                     className={
                       currentSortMethod && currentSortMethod.column === "customer"
@@ -216,7 +235,7 @@ export default function List() {
                       )
                     ) : null}
                     Customer
-                  </Table.HeaderCell> */}
+                  </Table.HeaderCell>
                   <Table.HeaderCell
                     singleLine
                     className={
@@ -277,7 +296,7 @@ export default function List() {
                 {invoices.map(inv => (
                   <Table.Row key={inv.id}>
                     <Table.Cell textAlign="center">{inv.id}</Table.Cell>
-                    {/* <Table.Cell singleLine>{inv.customer.name}</Table.Cell> */}
+                    <Table.Cell singleLine>{inv.customer.name}</Table.Cell>
                     <Table.Cell singleLine textAlign="right">
                       <Statistic size="mini">
                         <Statistic.Value>
@@ -318,19 +337,19 @@ export default function List() {
                       <Menu.Item as="button" title="Previous page" onClick={handleChangePage} icon>
                         <Icon name="chevron left" />
                       </Menu.Item>
-                      {/* {Array(total / limit)
+                      {Array(pages)
                         .fill(null)
                         .map((_, i) => (
                           <Menu.Item
                             key={i + 1}
                             as="button"
-                            title={`Page ${i + 1}`}
-                            active={currentPage === i + 1}
+                            title={i + 1}
+                            active={page === i + 1}
                             onClick={handleChangePage}
                           >
                             {i + 1}
                           </Menu.Item>
-                        ))} */}
+                        ))}
                       <Menu.Item as="button" title="Next page" onClick={handleChangePage} icon>
                         <Icon name="chevron right" />
                       </Menu.Item>
@@ -341,7 +360,6 @@ export default function List() {
             </Table>
           ) : (
             <Message
-              info
               fluid="true"
               icon="search"
               header="Not found"

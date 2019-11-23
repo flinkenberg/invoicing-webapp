@@ -1,8 +1,28 @@
-query getInvoices {
-  getInvoices {
-    id
+query getInvoices(
+  $limit: Int
+  $offset: Int
+  $search: String
+  $searchKey: InvoiceDBKey
+  $sortKey: InvoiceDBKey
+  $isDesc: Boolean
+) {
+  getInvoices(
+    limit: $limit
+    offset: $offset
+    search: $search
+    searchKey: $searchKey
+    sortKey: $sortKey
+    isDesc: $isDesc
+  ) {
     total
-    createdAt
-    status
+    items {
+      id
+      customer {
+        name
+      }
+      total
+      createdAt
+      status
+    }
   }
 }

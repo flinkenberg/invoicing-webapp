@@ -10,15 +10,30 @@ import * as ApolloReactCommon from '@apollo/react-common';
 import * as ApolloReactHooks from '@apollo/react-hooks';
 
 
-export type GetInvoicesQueryVariables = {};
+export type GetInvoicesQueryVariables = {
+  limit?: Types.Maybe<Types.Scalars['Int']>,
+  offset?: Types.Maybe<Types.Scalars['Int']>,
+  search?: Types.Maybe<Types.Scalars['String']>,
+  searchKey?: Types.Maybe<Types.InvoiceDbKey>,
+  sortKey?: Types.Maybe<Types.InvoiceDbKey>,
+  isDesc?: Types.Maybe<Types.Scalars['Boolean']>
+};
 
 
 export type GetInvoicesQuery = (
   { __typename?: 'Query' }
-  & { getInvoices: Array<Types.Maybe<(
-    { __typename?: 'Invoice' }
-    & Pick<Types.Invoice, 'id' | 'total' | 'createdAt' | 'status'>
-  )>> }
+  & { getInvoices: (
+    { __typename?: 'InvoicesPaginated' }
+    & Pick<Types.InvoicesPaginated, 'total'>
+    & { items: Array<Types.Maybe<(
+      { __typename?: 'Invoice' }
+      & Pick<Types.Invoice, 'id' | 'total' | 'createdAt' | 'status'>
+      & { customer: (
+        { __typename?: 'CustomerMin' }
+        & Pick<Types.CustomerMin, 'name'>
+      ) }
+    )>> }
+  ) }
 );
 
 
@@ -35,6 +50,12 @@ export type GetInvoicesQuery = (
  * @example
  * const { data, loading, error } = useGetInvoicesQuery({
  *   variables: {
+ *      limit: // value for 'limit'
+ *      offset: // value for 'offset'
+ *      search: // value for 'search'
+ *      searchKey: // value for 'searchKey'
+ *      sortKey: // value for 'sortKey'
+ *      isDesc: // value for 'isDesc'
  *   },
  * });
  */
