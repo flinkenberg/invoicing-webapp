@@ -37,5 +37,6 @@ enum InvoiceStatus {
 
 type Query {
   getInvoices(limit: Int, offset: Int, search: String, searchKey: InvoiceDBKey, sortKey: InvoiceDBKey, isDesc: Boolean): InvoicesPaginated!
+  getInvoice(id: ID!): Invoice!
   _: Boolean
 }

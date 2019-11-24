@@ -6,6 +6,7 @@ import { HashRouter as Router, Route, Switch, Redirect, NavLink, Link } from "re
 
 const InvoicesList = lazy(() => import("./Invoices/components/List"));
 const InvoicesCreate = lazy(() => import("./Invoices/components/Create"));
+const InvoicesSingle = lazy(() => import("./Invoices/components/Single"));
 const ContactsList = lazy(() => import("./Contacts/components/List"));
 
 export default function App() {
@@ -47,6 +48,7 @@ export default function App() {
               <Switch>
                 <Route path="/invoices/list" component={InvoicesList} />
                 <Route path="/invoices/create" component={InvoicesCreate} />
+                <Route path="/invoices/:id" component={InvoicesSingle} />
                 <Route path="/contacts" component={ContactsList} />
                 <Redirect to="/invoices/list" />
               </Switch>

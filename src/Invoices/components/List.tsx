@@ -1,7 +1,7 @@
 import React, { useState, ChangeEvent, createRef, RefObject, MouseEvent, useMemo, useEffect } from "react";
 import styles from "../../App.scss";
 import { Menu, Input, Dropdown, Table, Label, Icon, Message, Grid, Statistic } from "semantic-ui-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import useSort from "../../Common/hooks/useSort";
 import { useGetInvoicesQuery } from "../graphql/invoices.generated";
 import { InvoiceStatus, InvoiceDbKey } from "../../graphql_definitions";
@@ -12,7 +12,7 @@ export default function List() {
   const [input, setInput] = useState<string>("");
   const [ddOption, setDdOption] = useState<InvoiceDbKey>(defaultSortMethod);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
+  const [limit, setLimit] = useState(25);
   const { data, loading } = useGetInvoicesQuery({
     variables: {
       limit,
@@ -295,7 +295,9 @@ export default function List() {
               <Table.Body>
                 {invoices.map(inv => (
                   <Table.Row key={inv.id}>
-                    <Table.Cell textAlign="center">{inv.id}</Table.Cell>
+                    <Table.Cell textAlign="center">
+                      <Link to={`/invoices/${inv.id}`}>{inv.id}</Link>
+                    </Table.Cell>
                     <Table.Cell singleLine>{inv.customer.name}</Table.Cell>
                     <Table.Cell singleLine textAlign="right">
                       <Statistic size="mini">

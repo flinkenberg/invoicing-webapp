@@ -1,3 +1,13 @@
+fragment InvoiceMin on Invoice {
+  id
+  customer {
+    name
+  }
+  total
+  createdAt
+  status
+}
+
 query getInvoices(
   $limit: Int
   $offset: Int
@@ -16,13 +26,13 @@ query getInvoices(
   ) {
     total
     items {
-      id
-      customer {
-        name
-      }
-      total
-      createdAt
-      status
+      ...InvoiceMin
     }
+  }
+}
+
+query getInvoice($id: ID!) {
+  getInvoice(id: $id) {
+    ...InvoiceMin
   }
 }

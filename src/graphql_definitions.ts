@@ -52,6 +52,7 @@ export enum InvoiceStatus {
 export type Query = {
    __typename?: 'Query',
   getInvoices: InvoicesPaginated,
+  getInvoice: Invoice,
   _?: Maybe<Scalars['Boolean']>,
 };
 
@@ -63,4 +64,9 @@ export type QueryGetInvoicesArgs = {
   searchKey?: Maybe<InvoiceDbKey>,
   sortKey?: Maybe<InvoiceDbKey>,
   isDesc?: Maybe<Scalars['Boolean']>
+};
+
+
+export type QueryGetInvoiceArgs = {
+  id: Scalars['ID']
 };
