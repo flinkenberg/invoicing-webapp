@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { RouteComponentProps } from "react-router";
 import { useGetInvoiceQuery } from "../graphql/invoices.generated";
 import { Message, Icon, Card, List } from "semantic-ui-react";
@@ -10,7 +10,7 @@ export default function Single({
   },
 }: RouteComponentProps<{ id: string }>) {
   const { data, loading } = useGetInvoiceQuery({ variables: { id } });
-  const invoice = data && data.getInvoice ? data.getInvoice : null;
+  const invoice = useMemo(() => (data && data.getInvoice ? data.getInvoice : null), [data]);
   if (loading)
     return (
       <Message icon>

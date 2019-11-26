@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { RouteComponentProps } from "react-router";
 import { useGetContactQuery } from "../graphql/contacts.generated";
 import { Message, Icon } from "semantic-ui-react";
@@ -10,7 +10,7 @@ export default function Single({
   },
 }: RouteComponentProps<{ id: string }>) {
   const { data, loading } = useGetContactQuery({ variables: { id } });
-  const contact = data && data.getContact ? data.getContact : null;
+  const contact = useMemo(() => (data && data.getContact ? data.getContact : null), [data]);
   if (loading)
     return (
       <Message icon>
