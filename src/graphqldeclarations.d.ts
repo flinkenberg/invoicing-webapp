@@ -12,6 +12,7 @@ declare module '*/contacts.graphql' {
 export const ContactFull: DocumentNode;
 export const getContactsPreviews: DocumentNode;
 export const getContacts: DocumentNode;
+export const getContact: DocumentNode;
 export const createContact: DocumentNode;
 
   export default defaultDocument;

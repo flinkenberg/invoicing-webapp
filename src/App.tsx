@@ -9,6 +9,7 @@ const InvoicesCreate = lazy(() => import("./Invoices/components/Create"));
 const InvoicesSingle = lazy(() => import("./Invoices/components/Single"));
 const ContactsList = lazy(() => import("./Contacts/components/List"));
 const ContactsCreate = lazy(() => import("./Contacts/components/Create"));
+const ContactsSingle = lazy(() => import("./Contacts/components/Single"));
 
 export default function App() {
   return (
@@ -52,6 +53,7 @@ export default function App() {
                 <Route path="/invoices/:id" component={InvoicesSingle} />
                 <Route path="/contacts/list" component={ContactsList} />
                 <Route path="/contacts/create" component={ContactsCreate} />
+                <Route path="/contacts/:id" component={ContactsSingle} />
                 <Redirect to="/invoices/list" />
               </Switch>
             </Suspense>

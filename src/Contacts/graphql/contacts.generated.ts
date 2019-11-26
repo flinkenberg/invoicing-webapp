@@ -50,6 +50,19 @@ export type GetContactsQuery = (
   ) }
 );
 
+export type GetContactQueryVariables = {
+  id: Types.Scalars['ID']
+};
+
+
+export type GetContactQuery = (
+  { __typename?: 'Query' }
+  & { getContact: (
+    { __typename?: 'Contact' }
+    & ContactFullFragment
+  ) }
+);
+
 export type CreateContactMutationVariables = {
   input: Types.ContactInput
 };
@@ -114,6 +127,32 @@ export function useGetContactsLazyQuery(baseOptions?: ApolloReactHooks.LazyQuery
 export type GetContactsQueryHookResult = ReturnType<typeof useGetContactsQuery>;
 export type GetContactsLazyQueryHookResult = ReturnType<typeof useGetContactsLazyQuery>;
 export type GetContactsQueryResult = ApolloReactCommon.QueryResult<GetContactsQuery, GetContactsQueryVariables>;
+
+/**
+ * __useGetContactQuery__
+ *
+ * To run a query within a React component, call `useGetContactQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetContactQuery` returns an object from Apollo Client that contains loading, error, and data properties 
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetContactQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetContactQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetContactQuery, GetContactQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetContactQuery, GetContactQueryVariables>(Operations.getContact, baseOptions);
+      }
+export function useGetContactLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetContactQuery, GetContactQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetContactQuery, GetContactQueryVariables>(Operations.getContact, baseOptions);
+        }
+export type GetContactQueryHookResult = ReturnType<typeof useGetContactQuery>;
+export type GetContactLazyQueryHookResult = ReturnType<typeof useGetContactLazyQuery>;
+export type GetContactQueryResult = ApolloReactCommon.QueryResult<GetContactQuery, GetContactQueryVariables>;
 
 /**
  * __useCreateContactMutation__

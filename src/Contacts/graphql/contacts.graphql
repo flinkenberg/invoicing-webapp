@@ -33,6 +33,12 @@ query getContacts {
   }
 }
 
+query getContact($id: ID!) {
+  getContact(id: $id) {
+    ...ContactFull
+  }
+}
+
 mutation createContact($input: ContactInput!) {
   createContact(input: $input) {
     ...ContactFull

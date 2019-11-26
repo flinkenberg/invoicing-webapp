@@ -132,9 +132,15 @@ export type MutationCreateInvoiceArgs = {
 export type Query = {
    __typename?: 'Query',
   getContacts: ContactsPaginated,
+  getContact: Contact,
   getInvoices: InvoicesPaginated,
   getInvoice: Invoice,
   _?: Maybe<Scalars['Boolean']>,
+};
+
+
+export type QueryGetContactArgs = {
+  id: Scalars['ID']
 };
 
 

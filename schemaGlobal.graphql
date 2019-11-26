@@ -102,6 +102,7 @@ type Mutation {
 
 type Query {
   getContacts: ContactsPaginated!
+  getContact(id: ID!): Contact!
   getInvoices(limit: Int, offset: Int, search: String, searchKey: InvoiceDBKey, sortKey: InvoiceDBKey, isDesc: Boolean): InvoicesPaginated!
   getInvoice(id: ID!): Invoice!
   _: Boolean
