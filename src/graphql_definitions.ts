@@ -14,6 +14,34 @@ export type Scalars = {
   Float: number,
 };
 
+export type Contact = {
+   __typename?: 'Contact',
+  id: Scalars['ID'],
+  name: Scalars['String'],
+  street: Scalars['String'],
+  postcode: Scalars['String'],
+  county: Scalars['String'],
+  country: Scalars['String'],
+  email: Scalars['String'],
+  phone: Scalars['String'],
+};
+
+export type ContactInput = {
+  name: Scalars['String'],
+  street: Scalars['String'],
+  postcode: Scalars['String'],
+  county: Scalars['String'],
+  country: Scalars['String'],
+  email: Scalars['String'],
+  phone: Scalars['String'],
+};
+
+export type ContactsPaginated = {
+   __typename?: 'ContactsPaginated',
+  total: Scalars['Int'],
+  items: Array<Maybe<Contact>>,
+};
+
 export type CustomerMin = {
    __typename?: 'CustomerMin',
   name: Scalars['String'],
@@ -23,9 +51,15 @@ export type Invoice = {
    __typename?: 'Invoice',
   id: Scalars['ID'],
   customer: CustomerMin,
+  items: Array<Maybe<Item>>,
+  labels?: Maybe<Array<Maybe<LabelMin>>>,
   total: Scalars['Int'],
   createdAt: Scalars['String'],
   status: InvoiceStatus,
+};
+
+export type InvoiceCustomerInput = {
+  name: Scalars['String'],
 };
 
 export enum InvoiceDbKey {
@@ -36,6 +70,20 @@ export enum InvoiceDbKey {
   Status = 'status'
 }
 
+export type InvoiceInput = {
+  customer: InvoiceCustomerInput,
+  items: Array<Maybe<InvoiceItemInput>>,
+  total: Scalars['Int'],
+  status?: Maybe<InvoiceStatus>,
+};
+
+export type InvoiceItemInput = {
+  name: Scalars['String'],
+  description: Scalars['String'],
+  price: Scalars['Int'],
+  quantity: Scalars['Int'],
+};
+
 export type InvoicesPaginated = {
    __typename?: 'InvoicesPaginated',
   total: Scalars['Int'],
@@ -43,14 +91,47 @@ export type InvoicesPaginated = {
 };
 
 export enum InvoiceStatus {
+  Draft = 'DRAFT',
   Due = 'DUE',
   PastDue = 'PAST_DUE',
   Paid = 'PAID',
   Unpaid = 'UNPAID'
 }
 
+export type Item = {
+   __typename?: 'Item',
+  name: Scalars['String'],
+  description: Scalars['String'],
+  price: Scalars['Int'],
+  quantity: Scalars['Int'],
+};
+
+export type LabelMin = {
+   __typename?: 'LabelMin',
+  name: Scalars['String'],
+  color?: Maybe<Scalars['String']>,
+};
+
+export type Mutation = {
+   __typename?: 'Mutation',
+  createContact: Contact,
+  createInvoice: Invoice,
+  _?: Maybe<Scalars['Boolean']>,
+};
+
+
+export type MutationCreateContactArgs = {
+  input: ContactInput
+};
+
+
+export type MutationCreateInvoiceArgs = {
+  input: InvoiceInput
+};
+
 export type Query = {
    __typename?: 'Query',
+  getContacts: ContactsPaginated,
   getInvoices: InvoicesPaginated,
   getInvoice: Invoice,
   _?: Maybe<Scalars['Boolean']>,

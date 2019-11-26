@@ -36,3 +36,9 @@ query getInvoice($id: ID!) {
     ...InvoiceMin
   }
 }
+
+mutation createInvoice($input: InvoiceInput!) {
+  createInvoice(input: $input) {
+    ...InvoiceMin
+  }
+}

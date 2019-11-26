@@ -54,6 +54,19 @@ export type GetInvoiceQuery = (
   ) }
 );
 
+export type CreateInvoiceMutationVariables = {
+  input: Types.InvoiceInput
+};
+
+
+export type CreateInvoiceMutation = (
+  { __typename?: 'Mutation' }
+  & { createInvoice: (
+    { __typename?: 'Invoice' }
+    & InvoiceMinFragment
+  ) }
+);
+
 
 
 /**
@@ -112,3 +125,27 @@ export function useGetInvoiceLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryH
 export type GetInvoiceQueryHookResult = ReturnType<typeof useGetInvoiceQuery>;
 export type GetInvoiceLazyQueryHookResult = ReturnType<typeof useGetInvoiceLazyQuery>;
 export type GetInvoiceQueryResult = ApolloReactCommon.QueryResult<GetInvoiceQuery, GetInvoiceQueryVariables>;
+
+/**
+ * __useCreateInvoiceMutation__
+ *
+ * To run a mutation, you first call `useCreateInvoiceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateInvoiceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createInvoiceMutation, { data, loading, error }] = useCreateInvoiceMutation({
+ *   variables: {
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useCreateInvoiceMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateInvoiceMutation, CreateInvoiceMutationVariables>) {
+        return ApolloReactHooks.useMutation<CreateInvoiceMutation, CreateInvoiceMutationVariables>(Operations.createInvoice, baseOptions);
+      }
+export type CreateInvoiceMutationHookResult = ReturnType<typeof useCreateInvoiceMutation>;
+export type CreateInvoiceMutationResult = ApolloReactCommon.MutationResult<CreateInvoiceMutation>;
+export type CreateInvoiceMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateInvoiceMutation, CreateInvoiceMutationVariables>;

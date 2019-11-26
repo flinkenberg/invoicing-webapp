@@ -1,12 +1,26 @@
-import React, { useState } from "react";
-import { Grid, Menu, Form, Input, TextArea, Checkbox, Button, Dropdown } from "semantic-ui-react";
-import { NavLink } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { Grid, Menu, Form, Input, TextArea, Checkbox, Button, Dropdown, Message } from "semantic-ui-react";
+import { NavLink, Link } from "react-router-dom";
 import uuid from "uuid/v4";
+import { useGetContactsPreviewsQuery } from "../../Contacts/graphql/contacts.generated";
+import { useCreateInvoiceMutation, InvoiceMinFragment } from "../graphql/invoices.generated";
 
 export default function Create() {
   const [items, setItems] = useState<
     { id: string; name: string; description: string; price: number; quantity: number }[]
   >([]);
+  const [newData, setNewData] = useState<InvoiceMinFragment>(null);
+  const { data, loading: contactsLoading } = useGetContactsPreviewsQuery({ fetchPolicy: "network-only" });
+  const dropdownContacts = useMemo(
+    () =>
+      data && data.getContacts
+        ? data.getContacts.items.map(c => ({ key: c.id, value: c.id, text: `${c.name} (${c.email})` }))
+        : [],
+    [data],
+  );
+  const [submitInvoice, { loading: createLoading }] = useCreateInvoiceMutation({
+    onCompleted: data => setNewData(data.createInvoice),
+  });
   function handleAddItem(): void {
     const newItem = {
       id: uuid(),
@@ -17,6 +31,26 @@ export default function Create() {
     };
     setItems([...items, newItem]);
   }
+  function handleFormSubmit(): void {
+    submitInvoice({
+      variables: {
+        input: {
+          customer: {
+            name: "Lorem I",
+          },
+          items: [
+            {
+              name: "Test",
+              description: "lorem ipsum",
+              price: 10,
+              quantity: 5,
+            },
+          ],
+          total: 50,
+        },
+      },
+    });
+  }
   return (
     <Grid>
       <Grid.Column width={3}>
@@ -26,16 +60,17 @@ export default function Create() {
         </Menu>
       </Grid.Column>
       <Grid.Column stretched width={13}>
-        <Form>
+        <Form onSubmit={handleFormSubmit} loading={createLoading} success={newData !== null}>
           <Form.Group widths="equal">
             <Form.Field>
               <label>Customer</label>
               <Dropdown
+                loading={contactsLoading}
                 placeholder="Search customer"
                 fluid
                 search
                 selection
-                options={[{ key: "id", value: "Lorem ipsum", text: "Lorem Ipsum" }]}
+                options={dropdownContacts}
               />
             </Form.Field>
           </Form.Group>
@@ -88,9 +123,24 @@ export default function Create() {
           </Form.Field>
           <Form.Field control={TextArea} label="Notes" placeholder="Add some notes..." />
           <Form.Field control={Checkbox} checked={true} label="Save as a draft" />
-          <Form.Field control={Button} primary>
+          <Form.Field control={Button} type="submit" primary>
             Create
           </Form.Field>
+          {newData && (
+            <Message
+              success
+              icon="check"
+              header="Success"
+              content={
+                <>
+                  <p>Your new invoice has been successfuly created.</p>
+                  <Button as={Link} positive to={`/invoices/${newData.id}`}>
+                    Show
+                  </Button>
+                </>
+              }
+            />
+          )}
         </Form>
       </Grid.Column>
     </Grid>

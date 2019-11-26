@@ -8,6 +8,7 @@ const InvoicesList = lazy(() => import("./Invoices/components/List"));
 const InvoicesCreate = lazy(() => import("./Invoices/components/Create"));
 const InvoicesSingle = lazy(() => import("./Invoices/components/Single"));
 const ContactsList = lazy(() => import("./Contacts/components/List"));
+const ContactsCreate = lazy(() => import("./Contacts/components/Create"));
 
 export default function App() {
   return (
@@ -19,10 +20,10 @@ export default function App() {
               <Image size="mini" src="#" style={{ marginRight: "1.5rem" }} />
               Invoice Manager
             </Menu.Item>
-            <Menu.Item as={NavLink} to="/invoices">
+            <Menu.Item as={NavLink} to="/invoices/list">
               Invoices
             </Menu.Item>
-            <Menu.Item as={NavLink} to="/contacts">
+            <Menu.Item as={NavLink} to="/contacts/list">
               Contacts
             </Menu.Item>
             <Menu.Menu position="right">
@@ -49,7 +50,8 @@ export default function App() {
                 <Route path="/invoices/list" component={InvoicesList} />
                 <Route path="/invoices/create" component={InvoicesCreate} />
                 <Route path="/invoices/:id" component={InvoicesSingle} />
-                <Route path="/contacts" component={ContactsList} />
+                <Route path="/contacts/list" component={ContactsList} />
+                <Route path="/contacts/create" component={ContactsCreate} />
                 <Redirect to="/invoices/list" />
               </Switch>
             </Suspense>

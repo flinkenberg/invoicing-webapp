@@ -1,0 +1,40 @@
+fragment ContactMin on Contact {
+  id
+  name
+  email
+}
+
+fragment ContactFull on Contact {
+  id
+  name
+  street
+  postcode
+  county
+  country
+  email
+  phone
+}
+
+query getContactsPreviews {
+  getContacts {
+    total
+    items {
+      ...ContactMin
+    }
+  }
+}
+
+query getContacts {
+  getContacts {
+    total
+    items {
+      ...ContactFull
+    }
+  }
+}
+
+mutation createContact($input: ContactInput!) {
+  createContact(input: $input) {
+    ...ContactFull
+  }
+}

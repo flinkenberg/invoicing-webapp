@@ -54,6 +54,7 @@ export default function List() {
     }
   }
   function handleOnInputChange(e: ChangeEvent<HTMLInputElement>): void {
+    if (page !== 1) setPage(1);
     setInput(e.currentTarget.value);
   }
   // function handleStatusLabelClick(e: MouseEvent<HTMLButtonElement>): void {
