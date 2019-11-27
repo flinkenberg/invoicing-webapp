@@ -65,6 +65,10 @@ export default function Create() {
   const { data: contacts, loading: contactsLoading } = useGetContactsPreviewsQuery({ fetchPolicy: "network-only" });
   const [submitInvoice, { loading: createLoading }] = useCreateInvoiceMutation({
     onCompleted: data => setNewData(data.createInvoice),
+    optimisticResponse: {
+      __typename: "Mutation",
+      createInvoice: newData,
+    },
   });
   const dropdownContacts = useMemo(
     () =>
@@ -75,6 +79,34 @@ export default function Create() {
   );
   function handleAddItem(): void {
     setInvoiceItems([...invoiceItems, { id: uuid(), name: "", description: "", price: 0, quantity: 1 }]);
+  }
+  function handleItemNameChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const matchingItem = invoiceItems.find(it => it.id === e.currentTarget.name);
+    if (!matchingItem) return;
+    setInvoiceItems(
+      invoiceItems.map(it => {
+        if (it.id === matchingItem.id) {
+          return {
+            ...it,
+            name: e.currentTarget.value.trim(),
+          };
+        } else return it;
+      }),
+    );
+  }
+  function handleDescriptionChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const matchingItem = invoiceItems.find(it => it.id === e.currentTarget.name);
+    if (!matchingItem) return;
+    setInvoiceItems(
+      invoiceItems.map(it => {
+        if (it.id === matchingItem.id) {
+          return {
+            ...it,
+            description: e.currentTarget.value.trim(),
+          };
+        } else return it;
+      }),
+    );
   }
   function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>): void {
     const matchingItem = invoiceItems.find(it => it.id === e.currentTarget.name);
@@ -124,20 +156,7 @@ export default function Create() {
   function handleFormSubmit(): void {
     submitInvoice({
       variables: {
-        input: {
-          customer: {
-            name: "Lorem I",
-          },
-          items: [
-            {
-              name: "Test",
-              description: "lorem ipsum",
-              price: 10,
-              quantity: 5,
-            },
-          ],
-          total: 50,
-        },
+        input: data,
       },
     });
   }
@@ -187,8 +206,22 @@ export default function Create() {
             {invoiceItems.map(item => {
               return (
                 <Form.Group key={item.id} widths="equal">
-                  <Form.Field control={Input} label="Item" placeholder="Item" value={item.name} />
-                  <Form.Field control={Input} label="Description" placeholder="Description" value={item.description} />
+                  <Form.Field
+                    control={Input}
+                    label="Item"
+                    placeholder="Item"
+                    name={item.id}
+                    onChange={handleItemNameChange}
+                    value={item.name}
+                  />
+                  <Form.Field
+                    control={Input}
+                    label="Description"
+                    placeholder="Description"
+                    name={item.id}
+                    onChange={handleDescriptionChange}
+                    value={item.description}
+                  />
                   <Form.Field
                     control={Input}
                     type="number"
