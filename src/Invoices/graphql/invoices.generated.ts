@@ -12,7 +12,7 @@ import * as ApolloReactHooks from '@apollo/react-hooks';
 
 export type InvoiceMinFragment = (
   { __typename?: 'Invoice' }
-  & Pick<Types.Invoice, 'id' | 'currency' | 'tax' | 'subtotal' | 'total' | 'createdAt' | 'dueAt' | 'status'>
+  & Pick<Types.Invoice, 'id' | 'title' | 'invoiceNo' | 'currency' | 'taxRate' | 'subtotal' | 'tax' | 'total' | 'createdAt' | 'issuedAt' | 'dueAt' | 'status' | 'notes'>
   & { customer: (
     { __typename?: 'CustomerMin' }
     & Pick<Types.CustomerMin, 'name' | 'email'>

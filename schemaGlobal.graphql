@@ -37,16 +37,21 @@ type CustomerMin {
 
 type Invoice {
   id: ID!
+  invoiceNo: String!
+  title: String!
   customer: CustomerMin!
   items: [Item]!
   labels: [LabelMin]
   currency: String!
-  tax: Int!
+  taxRate: Int!
   subtotal: Float!
+  tax: Float!
   total: Float!
   createdAt: String!
   dueAt: String!
+  issuedAt: String!
   status: InvoiceStatus!
+  notes: String
 }
 
 enum InvoiceDBKey {
@@ -59,13 +64,18 @@ enum InvoiceDBKey {
 
 input InvoiceInput {
   customerId: ID!
+  invoiceNo: String!
+  title: String!
   items: [InvoiceItemInput]!
   currency: String!
-  tax: Int!
+  taxRate: Int!
   subtotal: Float!
+  tax: Float!
   total: Float!
   dueAtTimestamp: String!
+  issuedAtTimestamp: String!
   status: InvoiceStatus!
+  notes: String
 }
 
 input InvoiceItemInput {

@@ -52,16 +52,21 @@ export type CustomerMin = {
 export type Invoice = {
    __typename?: 'Invoice',
   id: Scalars['ID'],
+  invoiceNo: Scalars['String'],
+  title: Scalars['String'],
   customer: CustomerMin,
   items: Array<Maybe<Item>>,
   labels?: Maybe<Array<Maybe<LabelMin>>>,
   currency: Scalars['String'],
-  tax: Scalars['Int'],
+  taxRate: Scalars['Int'],
   subtotal: Scalars['Float'],
+  tax: Scalars['Float'],
   total: Scalars['Float'],
   createdAt: Scalars['String'],
   dueAt: Scalars['String'],
+  issuedAt: Scalars['String'],
   status: InvoiceStatus,
+  notes?: Maybe<Scalars['String']>,
 };
 
 export enum InvoiceDbKey {
@@ -74,13 +79,18 @@ export enum InvoiceDbKey {
 
 export type InvoiceInput = {
   customerId: Scalars['ID'],
+  invoiceNo: Scalars['String'],
+  title: Scalars['String'],
   items: Array<Maybe<InvoiceItemInput>>,
   currency: Scalars['String'],
-  tax: Scalars['Int'],
+  taxRate: Scalars['Int'],
   subtotal: Scalars['Float'],
+  tax: Scalars['Float'],
   total: Scalars['Float'],
   dueAtTimestamp: Scalars['String'],
+  issuedAtTimestamp: Scalars['String'],
   status: InvoiceStatus,
+  notes?: Maybe<Scalars['String']>,
 };
 
 export type InvoiceItemInput = {

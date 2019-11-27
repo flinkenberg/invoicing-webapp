@@ -1,16 +1,21 @@
 fragment InvoiceMin on Invoice {
   id
+  title
+  invoiceNo
   customer {
     name
     email
   }
   currency
-  tax
+  taxRate
   subtotal
+  tax
   total
   createdAt
+  issuedAt
   dueAt
   status
+  notes
 }
 
 query getInvoices(

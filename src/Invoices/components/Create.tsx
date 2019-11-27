@@ -20,46 +20,14 @@ import {
 import { NavLink, Link } from "react-router-dom";
 import { useGetContactsPreviewsQuery, ContactMinFragment } from "../../Contacts/graphql/contacts.generated";
 import { useCreateInvoiceMutation, InvoiceMinFragment } from "../graphql/invoices.generated";
-import { InvoiceInput, InvoiceStatus, InvoiceItemInput } from "../../graphql_definitions";
+import { InvoiceStatus, InvoiceItemInput } from "../../graphql_definitions";
 import DatePicker from "react-datepicker";
 import uuid from "uuid/v4";
+import { invoiceCreateReducer, invoiceCreateInitState } from "../misc";
 
 export default function Create() {
-  const [data, dispatch] = useReducer(
-    (
-      state: InvoiceInput,
-      action:
-        | { field: keyof Omit<InvoiceInput, "items" | "customer">; value: string | number }
-        | { field: "status"; value: InvoiceStatus }
-        | { field: "items"; value: InvoiceItemInput[] },
-    ) => {
-      switch (action.field) {
-        case "items":
-          const total = action.value.reduce((acc, item) => (acc += item.price * item.quantity), 0);
-          return {
-            ...state,
-            items: action.value,
-            subtotal: total - (total / 100) * state.tax,
-            total,
-          };
-        default:
-          return {
-            ...state,
-            [action.field]: action.value,
-          };
-      }
-    },
-    {
-      customerId: null,
-      items: [],
-      currency: "",
-      tax: 21,
-      subtotal: 0,
-      total: 0,
-      dueAtTimestamp: new Date(new Date().setHours(new Date().getHours() + 24)).getTime().toString(),
-      status: InvoiceStatus.Draft,
-    },
-  );
+  const [decPoints, setDecPoints] = useState(3);
+  const [data, dispatch] = useReducer(invoiceCreateReducer, invoiceCreateInitState);
   const [invoiceItems, setInvoiceItems] = useState<(InvoiceItemInput & { id: string })[]>([]);
   const [newData, setNewData] = useState<InvoiceMinFragment>(null);
   const { data: contacts, loading: contactsLoading } = useGetContactsPreviewsQuery({ fetchPolicy: "network-only" });
@@ -81,10 +49,18 @@ export default function Create() {
   function handleAddItem(): void {
     setInvoiceItems([...invoiceItems, { id: uuid(), name: "", description: "", price: 0, quantity: 1 }]);
   }
-  function handleDueChange(d: Date): void {
+  function handleTitleChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const value = e.currentTarget.value;
     dispatch({
-      field: "dueAtTimestamp",
-      value: d.getTime().toString(),
+      field: "title",
+      value,
+    });
+  }
+  function handleINoChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const value = e.currentTarget.value;
+    dispatch({
+      field: "invoiceNo",
+      value,
     });
   }
   function handleItemNameChange(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -160,6 +136,42 @@ export default function Create() {
       value: data.checked ? InvoiceStatus.Draft : InvoiceStatus.Due,
     });
   }
+  function handleDueChange(d: Date): void {
+    dispatch({
+      field: "dueAtTimestamp",
+      value: d.getTime().toString(),
+    });
+  }
+  function handleIssueChange(d: Date): void {
+    dispatch({
+      field: "issuedAtTimestamp",
+      value: d.getTime().toString(),
+    });
+  }
+  function handleTaxRateChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const rate = parseInt(e.currentTarget.value, 10);
+    if (!rate) return;
+    dispatch({
+      field: "taxRate",
+      value: rate,
+      decPoints,
+    });
+  }
+  function handleDecPointsChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const decPoints = parseInt(e.currentTarget.value, 10);
+    setDecPoints(decPoints);
+    dispatch({
+      field: "_decPoints",
+      value: decPoints,
+      decPoints,
+    });
+  }
+  function handleNotesChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    dispatch({
+      field: "notes",
+      value: e.currentTarget.value,
+    });
+  }
   function handleFormSubmit(): void {
     submitInvoice({
       variables: {
@@ -174,6 +186,7 @@ export default function Create() {
         const { id, ...it } = item;
         return it;
       }),
+      decPoints,
     });
   }, [invoiceItems]);
   useEffect(() => {
@@ -219,11 +232,47 @@ export default function Create() {
         <Form onSubmit={handleFormSubmit} loading={createLoading} success={newData !== null}>
           <Segment loading={contactsLoading}>
             <Grid divided>
+              <Grid.Column width={5}>
+                <Form.Field
+                  control={Input}
+                  value={data.title}
+                  onChange={handleTitleChange}
+                  type="text"
+                  label="Title"
+                  placeholder="Invoice Title"
+                />
+                <Form.Field
+                  control={Input}
+                  value={data.invoiceNo}
+                  onChange={handleINoChange}
+                  type="text"
+                  label="Invoice No."
+                  placeholder="Invoice No."
+                />
+              </Grid.Column>
+              <Grid.Column width={5}>
+                <Form.Field>
+                  <label>Issue Date</label>
+                  <DatePicker
+                    minDate={new Date()}
+                    selected={new Date(parseInt(data.issuedAtTimestamp, 10))}
+                    onChange={handleIssueChange}
+                  />
+                </Form.Field>
+                <Form.Field>
+                  <label>Due Date</label>
+                  <DatePicker
+                    minDate={new Date(parseInt(data.issuedAtTimestamp, 10))}
+                    selected={new Date(parseInt(data.dueAtTimestamp, 10))}
+                    onChange={handleDueChange}
+                  />
+                </Form.Field>
+              </Grid.Column>
               <Grid.Column stretched width={6}>
                 <Form.Field>
                   <label>Customer</label>
                   <Dropdown
-                    placeholder="Search customer"
+                    placeholder="Search Customer Name"
                     fluid
                     search
                     selection
@@ -251,17 +300,6 @@ export default function Create() {
                   </Card>
                 )}
               </Grid.Column>
-              <Grid.Column width={5}>
-                <Form.Field>
-                  <label>Due Date</label>
-                  <DatePicker
-                    minDate={new Date()}
-                    selected={new Date(parseInt(data.dueAtTimestamp, 10))}
-                    onChange={handleDueChange}
-                  />
-                </Form.Field>
-              </Grid.Column>
-              <Grid.Column width={5}></Grid.Column>
             </Grid>
           </Segment>
           <Segment>
@@ -315,23 +353,55 @@ export default function Create() {
             )}
           </Segment>
           <Segment>
-            <Statistic.Group>
-              <Statistic>
-                <Statistic.Label>Tax</Statistic.Label>
-                <Statistic.Value>{data.tax}%</Statistic.Value>
-              </Statistic>
-              <Statistic>
-                <Statistic.Label>Subotal</Statistic.Label>
-                <Statistic.Value>{data.subtotal}</Statistic.Value>
-              </Statistic>
-              <Statistic>
-                <Statistic.Label>Total</Statistic.Label>
-                <Statistic.Value>{data.total}</Statistic.Value>
-              </Statistic>
-            </Statistic.Group>
+            <Grid divided>
+              <Grid.Column width={8}>
+                <Statistic.Group horizontal size="tiny">
+                  <Statistic>
+                    <Statistic.Value>{data.subtotal.toString()}</Statistic.Value>
+                    <Statistic.Label>Subtotal</Statistic.Label>
+                  </Statistic>
+                  <Statistic>
+                    <Statistic.Value>{data.tax.toString()}</Statistic.Value>
+                    <Statistic.Label>Tax</Statistic.Label>
+                  </Statistic>
+                  <Statistic>
+                    <Statistic.Value>{data.total.toString()}</Statistic.Value>
+                    <Statistic.Label>Total</Statistic.Label>
+                  </Statistic>
+                </Statistic.Group>
+              </Grid.Column>
+              <Grid.Column width={8}>
+                <Form.Field
+                  control={Input}
+                  type="number"
+                  min={1}
+                  max={99}
+                  label="Tax rate"
+                  placeholder="Enter Tax Rate ..."
+                  value={data.taxRate}
+                  onChange={handleTaxRateChange}
+                />
+                <Form.Field
+                  control={Input}
+                  type="number"
+                  min={1}
+                  max={3}
+                  label="Decimal points"
+                  placeholder="Number of decimal points"
+                  value={decPoints}
+                  onChange={handleDecPointsChange}
+                />
+              </Grid.Column>
+            </Grid>
           </Segment>
           <Segment>
-            <Form.Field control={TextArea} label="Notes" placeholder="Add some notes..." />
+            <Form.Field
+              control={TextArea}
+              onChange={handleNotesChange}
+              value={data.notes}
+              label="Notes"
+              placeholder="Add some notes..."
+            />
             <Form.Field
               control={Checkbox}
               onChange={handleStatusChange}
