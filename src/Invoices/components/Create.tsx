@@ -17,7 +17,7 @@ import {
 import { NavLink, Link } from "react-router-dom";
 import { useGetContactsPreviewsQuery } from "../../Contacts/graphql/contacts.generated";
 import { useCreateInvoiceMutation, InvoiceMinFragment } from "../graphql/invoices.generated";
-import { InvoiceInput, InvoiceStatus, InvoiceItemInput, InvoiceCustomerInput } from "../../graphql_definitions";
+import { InvoiceInput, InvoiceStatus, InvoiceItemInput } from "../../graphql_definitions";
 import uuid from "uuid/v4";
 
 export default function Create() {
@@ -26,21 +26,17 @@ export default function Create() {
       state: InvoiceInput,
       action:
         | { field: keyof Omit<InvoiceInput, "items" | "customer">; value: string | number }
-        | { field: "customer"; value: InvoiceCustomerInput }
         | { field: "status"; value: InvoiceStatus }
         | { field: "items"; value: InvoiceItemInput[] },
     ) => {
       switch (action.field) {
         case "items":
+          const subtotal = action.value.reduce((acc, item) => (acc += item.price * item.quantity), 0);
           return {
             ...state,
             items: action.value,
-            total: action.value.reduce((acc, item) => (acc += item.price * item.quantity), 0),
-          };
-        case "customer":
-          return {
-            ...state,
-            customer: action.value,
+            subtotal,
+            total: (subtotal / 100) * state.tax + subtotal,
           };
         default:
           return {
@@ -50,11 +46,13 @@ export default function Create() {
       }
     },
     {
-      customer: {
-        name: "",
-      },
+      customerId: null,
       items: [],
+      currency: "",
+      tax: 21,
+      subtotal: 0,
       total: 0,
+      dueAtTimestamp: "",
       status: InvoiceStatus.Draft,
     },
   );
@@ -76,6 +74,9 @@ export default function Create() {
         ? contacts.getContacts.items.map(c => ({ key: c.id, value: c.name, text: `${c.name} (${c.email})` }))
         : [],
     [contacts],
+  );
+  const [selectedCustomer, selectCustomer] = useState(
+    dropdownContacts.length ? dropdownContacts[dropdownContacts.length - 1].text : "",
   );
   function handleAddItem(): void {
     setInvoiceItems([...invoiceItems, { id: uuid(), name: "", description: "", price: 0, quantity: 1 }]);
@@ -139,11 +140,10 @@ export default function Create() {
   function handleChangeCustomer(_e: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps): void {
     const matchingCustomer = dropdownContacts.find(c => c.value === data.value);
     if (!matchingCustomer) return;
+    selectCustomer(matchingCustomer.text);
     dispatch({
-      field: "customer",
-      value: {
-        name: matchingCustomer.value,
-      },
+      field: "customerId",
+      value: matchingCustomer.key,
     });
   }
   function handleStatusChange(e: React.ChangeEvent<HTMLInputElement>, data: CheckboxProps): void {
@@ -178,14 +178,14 @@ export default function Create() {
         </Menu>
       </Grid.Column>
       <Grid.Column stretched width={13}>
-        <code>
+        {/* <code>
           invoice items w ids:
           {JSON.stringify(invoiceItems)}
-        </code>
-        <code>
+        </code> */}
+        {/* <code>
           data state:
           {JSON.stringify(data)}
-        </code>
+        </code> */}
         <Form onSubmit={handleFormSubmit} loading={createLoading} success={newData !== null}>
           <Form.Group widths="equal">
             <Form.Field>
@@ -197,7 +197,7 @@ export default function Create() {
                 search
                 selection
                 onChange={handleChangeCustomer}
-                value={data.customer.name}
+                value={selectedCustomer}
                 options={dropdownContacts}
               />
             </Form.Field>
@@ -252,10 +252,20 @@ export default function Create() {
             )}
           </div>
           <Segment>
-            <Statistic>
-              <Statistic.Label>Total</Statistic.Label>
-              <Statistic.Value>{data.total}</Statistic.Value>
-            </Statistic>
+            <Statistic.Group>
+              <Statistic>
+                <Statistic.Label>Tax</Statistic.Label>
+                <Statistic.Value>{data.tax}%</Statistic.Value>
+              </Statistic>
+              <Statistic>
+                <Statistic.Label>Subotal</Statistic.Label>
+                <Statistic.Value>{data.subtotal}</Statistic.Value>
+              </Statistic>
+              <Statistic>
+                <Statistic.Label>Total</Statistic.Label>
+                <Statistic.Value>{data.total}</Statistic.Value>
+              </Statistic>
+            </Statistic.Group>
           </Segment>
           <Form.Field control={TextArea} label="Notes" placeholder="Add some notes..." />
           <Form.Field

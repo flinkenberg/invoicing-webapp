@@ -45,6 +45,8 @@ export type ContactsPaginated = {
 export type CustomerMin = {
    __typename?: 'CustomerMin',
   name: Scalars['String'],
+  email: Scalars['String'],
+  phone: Scalars['String'],
 };
 
 export type Invoice = {
@@ -53,13 +55,13 @@ export type Invoice = {
   customer: CustomerMin,
   items: Array<Maybe<Item>>,
   labels?: Maybe<Array<Maybe<LabelMin>>>,
+  currency: Scalars['String'],
+  tax: Scalars['Int'],
+  subtotal: Scalars['Int'],
   total: Scalars['Int'],
   createdAt: Scalars['String'],
+  dueAt: Scalars['String'],
   status: InvoiceStatus,
-};
-
-export type InvoiceCustomerInput = {
-  name: Scalars['String'],
 };
 
 export enum InvoiceDbKey {
@@ -71,10 +73,14 @@ export enum InvoiceDbKey {
 }
 
 export type InvoiceInput = {
-  customer: InvoiceCustomerInput,
+  customerId: Scalars['ID'],
   items: Array<Maybe<InvoiceItemInput>>,
+  currency: Scalars['String'],
+  tax: Scalars['Int'],
+  subtotal: Scalars['Int'],
   total: Scalars['Int'],
-  status?: Maybe<InvoiceStatus>,
+  dueAtTimestamp: Scalars['String'],
+  status: InvoiceStatus,
 };
 
 export type InvoiceItemInput = {
@@ -104,6 +110,7 @@ export type Item = {
   description: Scalars['String'],
   price: Scalars['Int'],
   quantity: Scalars['Int'],
+  discount?: Maybe<Scalars['Int']>,
 };
 
 export type LabelMin = {

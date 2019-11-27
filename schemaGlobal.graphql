@@ -31,6 +31,8 @@ type ContactsPaginated {
 
 type CustomerMin {
   name: String!
+  email: String!
+  phone: String!
 }
 
 type Invoice {
@@ -38,13 +40,13 @@ type Invoice {
   customer: CustomerMin!
   items: [Item]!
   labels: [LabelMin]
+  currency: String!
+  tax: Int!
+  subtotal: Int!
   total: Int!
   createdAt: String!
+  dueAt: String!
   status: InvoiceStatus!
-}
-
-input InvoiceCustomerInput {
-  name: String!
 }
 
 enum InvoiceDBKey {
@@ -56,10 +58,14 @@ enum InvoiceDBKey {
 }
 
 input InvoiceInput {
-  customer: InvoiceCustomerInput!
+  customerId: ID!
   items: [InvoiceItemInput]!
+  currency: String!
+  tax: Int!
+  subtotal: Int!
   total: Int!
-  status: InvoiceStatus = DRAFT
+  dueAtTimestamp: String!
+  status: InvoiceStatus!
 }
 
 input InvoiceItemInput {
@@ -87,6 +93,7 @@ type Item {
   description: String!
   price: Int!
   quantity: Int!
+  discount: Int
 }
 
 type LabelMin {

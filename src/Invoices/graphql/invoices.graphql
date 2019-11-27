@@ -2,9 +2,14 @@ fragment InvoiceMin on Invoice {
   id
   customer {
     name
+    email
   }
+  currency
+  tax
+  subtotal
   total
   createdAt
+  dueAt
   status
 }
 
