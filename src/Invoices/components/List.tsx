@@ -106,6 +106,9 @@ export default function List() {
   function renderInvoiceStatusTag(status: InvoiceStatus): JSX.Element {
     let color;
     switch (status) {
+      case InvoiceStatus.Due:
+        color = "blue";
+        break;
       case InvoiceStatus.PastDue:
         color = "orange";
         break;
@@ -113,7 +116,7 @@ export default function List() {
         color = "green";
         break;
       default:
-        color = "blue";
+        color = "grey";
     }
     return (
       <Label

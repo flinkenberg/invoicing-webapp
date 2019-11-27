@@ -57,8 +57,8 @@ export type Invoice = {
   labels?: Maybe<Array<Maybe<LabelMin>>>,
   currency: Scalars['String'],
   tax: Scalars['Int'],
-  subtotal: Scalars['Int'],
-  total: Scalars['Int'],
+  subtotal: Scalars['Float'],
+  total: Scalars['Float'],
   createdAt: Scalars['String'],
   dueAt: Scalars['String'],
   status: InvoiceStatus,
@@ -77,8 +77,8 @@ export type InvoiceInput = {
   items: Array<Maybe<InvoiceItemInput>>,
   currency: Scalars['String'],
   tax: Scalars['Int'],
-  subtotal: Scalars['Int'],
-  total: Scalars['Int'],
+  subtotal: Scalars['Float'],
+  total: Scalars['Float'],
   dueAtTimestamp: Scalars['String'],
   status: InvoiceStatus,
 };
@@ -86,7 +86,7 @@ export type InvoiceInput = {
 export type InvoiceItemInput = {
   name: Scalars['String'],
   description: Scalars['String'],
-  price: Scalars['Int'],
+  price: Scalars['Float'],
   quantity: Scalars['Int'],
 };
 
@@ -108,7 +108,7 @@ export type Item = {
    __typename?: 'Item',
   name: Scalars['String'],
   description: Scalars['String'],
-  price: Scalars['Int'],
+  price: Scalars['Float'],
   quantity: Scalars['Int'],
   discount?: Maybe<Scalars['Int']>,
 };
