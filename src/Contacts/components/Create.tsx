@@ -2,21 +2,18 @@ import React, { useState, useReducer } from "react";
 import { Grid, Menu, Form, Input, Button, Message, Select } from "semantic-ui-react";
 import { NavLink, Link } from "react-router-dom";
 import { useCreateContactMutation, ContactFullFragment } from "../graphql/contacts.generated";
+import { ContactInput } from "src/graphql_definitions";
 
 export default function Create() {
   const [newData, setNewData] = useState<ContactFullFragment>(null);
   const [data, dispatch] = useReducer(
-    (
-      state: { [K in keyof Omit<ContactFullFragment, "__typename">]: string },
-      action: { field: keyof Omit<ContactFullFragment, "__typename">; value: string },
-    ) => {
+    (state: ContactInput, action: { field: keyof ContactInput; value: string }) => {
       return {
         ...state,
         [action.field]: action.value,
       };
     },
     {
-      id: null,
       name: "",
       email: "",
       phone: "",
@@ -34,11 +31,10 @@ export default function Create() {
     dispatch({ field, value: e.currentTarget.value });
   }
   function handleFormSubmit(): void {
-    const { id, ...rest } = data;
     createContact({
       variables: {
         input: {
-          ...rest,
+          ...data,
         },
       },
     });

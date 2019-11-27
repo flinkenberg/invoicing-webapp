@@ -1,35 +1,125 @@
-import React, { useState, useMemo } from "react";
-import { Grid, Menu, Form, Input, TextArea, Checkbox, Button, Dropdown, Message } from "semantic-ui-react";
+import React, { useState, useMemo, useReducer, useEffect } from "react";
+import {
+  Grid,
+  Menu,
+  Form,
+  Input,
+  TextArea,
+  Checkbox,
+  Button,
+  Dropdown,
+  Message,
+  DropdownProps,
+  Statistic,
+  Segment,
+  CheckboxProps,
+} from "semantic-ui-react";
 import { NavLink, Link } from "react-router-dom";
-import uuid from "uuid/v4";
 import { useGetContactsPreviewsQuery } from "../../Contacts/graphql/contacts.generated";
 import { useCreateInvoiceMutation, InvoiceMinFragment } from "../graphql/invoices.generated";
+import { InvoiceInput, InvoiceStatus, InvoiceItemInput, InvoiceCustomerInput } from "../../graphql_definitions";
+import uuid from "uuid/v4";
 
 export default function Create() {
-  const [items, setItems] = useState<
-    { id: string; name: string; description: string; price: number; quantity: number }[]
-  >([]);
-  const [newData, setNewData] = useState<InvoiceMinFragment>(null);
-  const { data, loading: contactsLoading } = useGetContactsPreviewsQuery({ fetchPolicy: "network-only" });
-  const dropdownContacts = useMemo(
-    () =>
-      data && data.getContacts
-        ? data.getContacts.items.map(c => ({ key: c.id, value: c.id, text: `${c.name} (${c.email})` }))
-        : [],
-    [data],
+  const [data, dispatch] = useReducer(
+    (
+      state: InvoiceInput,
+      action:
+        | { field: keyof Omit<InvoiceInput, "items" | "customer">; value: string | number }
+        | { field: "customer"; value: InvoiceCustomerInput }
+        | { field: "status"; value: InvoiceStatus }
+        | { field: "items"; value: InvoiceItemInput[] },
+    ) => {
+      switch (action.field) {
+        case "items":
+          return {
+            ...state,
+            items: action.value,
+            total: action.value.reduce((acc, item) => (acc += item.price * item.quantity), 0),
+          };
+        case "customer":
+          return {
+            ...state,
+            customer: action.value,
+          };
+        default:
+          return {
+            ...state,
+            [action.field]: action.value,
+          };
+      }
+    },
+    {
+      customer: {
+        name: "",
+      },
+      items: [],
+      total: 0,
+      status: InvoiceStatus.Draft,
+    },
   );
+  const [invoiceItems, setInvoiceItems] = useState<(InvoiceItemInput & { id: string })[]>([
+    { id: uuid(), name: "", description: "", price: 0, quantity: 1 },
+  ]);
+  const [newData, setNewData] = useState<InvoiceMinFragment>(null);
+  const { data: contacts, loading: contactsLoading } = useGetContactsPreviewsQuery({ fetchPolicy: "network-only" });
   const [submitInvoice, { loading: createLoading }] = useCreateInvoiceMutation({
     onCompleted: data => setNewData(data.createInvoice),
   });
+  const dropdownContacts = useMemo(
+    () =>
+      contacts && contacts.getContacts
+        ? contacts.getContacts.items.map(c => ({ key: c.id, value: c.name, text: `${c.name} (${c.email})` }))
+        : [],
+    [contacts],
+  );
   function handleAddItem(): void {
-    const newItem = {
-      id: uuid(),
-      name: "",
-      description: "",
-      price: 0,
-      quantity: 1,
-    };
-    setItems([...items, newItem]);
+    setInvoiceItems([...invoiceItems, { id: uuid(), name: "", description: "", price: 0, quantity: 1 }]);
+  }
+  function handlePriceChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const matchingItem = invoiceItems.find(it => it.id === e.currentTarget.name);
+    if (!matchingItem) return;
+    setInvoiceItems(
+      invoiceItems.map(it => {
+        if (it.id === matchingItem.id) {
+          return {
+            ...it,
+            price: parseInt(e.currentTarget.value, 10),
+          };
+        } else return it;
+      }),
+    );
+  }
+  function handleQuantityChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    const matchingItem = invoiceItems.find(it => it.id === e.currentTarget.name);
+    if (!matchingItem) return;
+    setInvoiceItems(
+      invoiceItems.map(it => {
+        if (it.id === matchingItem.id) {
+          return {
+            ...it,
+            quantity: parseInt(e.currentTarget.value, 10),
+          };
+        } else return it;
+      }),
+    );
+  }
+  function handleChangeCustomer(_e: React.SyntheticEvent<HTMLElement, Event>, data: DropdownProps): void {
+    const matchingCustomer = dropdownContacts.find(c => c.value === data.value);
+    if (!matchingCustomer) return;
+    dispatch({
+      field: "customer",
+      value: {
+        name: matchingCustomer.value,
+      },
+    });
+  }
+  function handleStatusChange(e: React.ChangeEvent<HTMLInputElement>, data: CheckboxProps): void {
+    if (!data) return;
+    dispatch({
+      field: "status",
+      value: data.checked ? InvoiceStatus.Draft : InvoiceStatus.Due,
+    });
   }
   function handleFormSubmit(): void {
     submitInvoice({
@@ -51,6 +141,15 @@ export default function Create() {
       },
     });
   }
+  useEffect(() => {
+    dispatch({
+      field: "items",
+      value: invoiceItems.map(item => {
+        const { id, ...it } = item;
+        return it;
+      }),
+    });
+  }, [invoiceItems]);
   return (
     <Grid>
       <Grid.Column width={3}>
@@ -60,6 +159,14 @@ export default function Create() {
         </Menu>
       </Grid.Column>
       <Grid.Column stretched width={13}>
+        <code>
+          invoice items w ids:
+          {JSON.stringify(invoiceItems)}
+        </code>
+        <code>
+          data state:
+          {JSON.stringify(data)}
+        </code>
         <Form onSubmit={handleFormSubmit} loading={createLoading} success={newData !== null}>
           <Form.Group widths="equal">
             <Form.Field>
@@ -70,59 +177,60 @@ export default function Create() {
                 fluid
                 search
                 selection
+                onChange={handleChangeCustomer}
+                value={data.customer.name}
                 options={dropdownContacts}
               />
             </Form.Field>
           </Form.Group>
           <div>
-            {items.map(item => (
-              <Form.Group key={item.id} widths="equal">
-                <Form.Field control={Input} label="Item" placeholder="Item" value={item.name} />
-                <Form.Field control={Input} label="Description" placeholder="Description" value={item.description} />
-                <Form.Field
-                  control={Input}
-                  type="number"
-                  min={0}
-                  label="Price"
-                  placeholder="Price"
-                  value={item.price}
-                />
-                <Form.Field
-                  control={Input}
-                  type="number"
-                  min={1}
-                  label="Quantity"
-                  placeholder="Quantity"
-                  value={item.quantity}
-                />
-              </Form.Group>
-            ))}
-            <Button type="button" onClick={handleAddItem}>
-              Add Item
-            </Button>
+            {invoiceItems.map(item => {
+              return (
+                <Form.Group key={item.id} widths="equal">
+                  <Form.Field control={Input} label="Item" placeholder="Item" value={item.name} />
+                  <Form.Field control={Input} label="Description" placeholder="Description" value={item.description} />
+                  <Form.Field
+                    control={Input}
+                    type="number"
+                    min={0}
+                    label="Price"
+                    placeholder="Price"
+                    name={item.id}
+                    onChange={handlePriceChange}
+                    value={item.price}
+                  />
+                  <Form.Field
+                    control={Input}
+                    type="number"
+                    min={1}
+                    label="Quantity"
+                    placeholder="Quantity"
+                    name={item.id}
+                    onChange={handleQuantityChange}
+                    value={item.quantity}
+                  />
+                </Form.Group>
+              );
+            })}
+            {data.total > 0 && (
+              <Button type="button" onClick={handleAddItem}>
+                Add Item
+              </Button>
+            )}
           </div>
-          {/* <Form.Group inline>
-            <label>Radios</label>
-            <Form.Field control={Radio} label="Lorem" value="1" checked={true} onChange={() => null} />
-            <Form.Field control={Radio} label="Ipsum" value="2" checked={false} onChange={() => null} />
-            <Form.Field control={Radio} label="Dolor" value="3" checked={false} onChange={() => null} />
-          </Form.Group> */}
-          <Form.Field>
-            <label>Labels</label>
-            <Dropdown
-              placeholder="Search label"
-              fluid
-              multiple
-              search
-              selection
-              options={[
-                { key: "loremid", value: "lorem", text: "Lorem" },
-                { key: "ipsumid", value: "ipsum", text: "Ipsum" },
-              ]}
-            />
-          </Form.Field>
+          <Segment>
+            <Statistic>
+              <Statistic.Label>Total</Statistic.Label>
+              <Statistic.Value>{data.total}</Statistic.Value>
+            </Statistic>
+          </Segment>
           <Form.Field control={TextArea} label="Notes" placeholder="Add some notes..." />
-          <Form.Field control={Checkbox} checked={true} label="Save as a draft" />
+          <Form.Field
+            control={Checkbox}
+            onChange={handleStatusChange}
+            checked={data.status === InvoiceStatus.Draft}
+            label="Save as a draft"
+          />
           <Form.Field control={Button} type="submit" primary>
             Create
           </Form.Field>
